@@ -17,7 +17,7 @@ prep_ts_data <- function(date_range){
   if(!require(zoo)){install.packages("zoo")}; library(zoo)
   
   # get data
-  df_predictIt <- read_csv("https://raw.githubusercontent.com/davidrmoxley/predictit_time_series_forecast/master/predictItprez.csv")
+  df_predictIt <- read.csv("https://raw.githubusercontent.com/davidrmoxley/predictit_time_series_forecast/master/predictItprez.csv")
   df_job <- read.csv("https://raw.githubusercontent.com/davidrmoxley/predictit_time_series_forecast/master/jobApproval.csv")
   df_google <- read.csv("https://raw.githubusercontent.com/davidrmoxley/predictit_time_series_forecast/master/googleTrend_Pres.csv")
   df_sp <- read.csv("https://raw.githubusercontent.com/davidrmoxley/predictit_time_series_forecast/master/sp500.csv")
@@ -62,7 +62,7 @@ prep_ts_data <- function(date_range){
   
   df_job_new$jobSpread <- df_job_new$Approve - df_job_new$Disapprove
   df_job <- aggregate(jobSpread ~ Date, data=df_job_new, FUN=mean)
-  rm(df_job_new)
+  rm(df_job_new,i)
   
   ### google data
   colnames(df_google) <- c("Date","gTrend")
@@ -80,6 +80,7 @@ prep_ts_data <- function(date_range){
   df_sp <- merge(df_sp,temp,by.x="Month",by.y="PrevMonth")
   df_sp$devPrevMonth <- with(df_sp, (Close-AvgClose)/AvgClose)
   df_sp <- df_sp[colnames(df_sp)%in%c("Date","devPrevMonth")]
+  rm(temp)
   
   ## Combine datasets
   df <- merge(df_price,df_tradeVol,by="Date",all.x=TRUE)
@@ -88,8 +89,8 @@ prep_ts_data <- function(date_range){
   df <- merge(df,df_sp,by="Date",all.x=TRUE)
   
   ## Interpolate NAs with previous values
-  df$devPrevMonth <- na.locf(df$devPrevMonth, fromLast = TRUE)
-  df$gTrend <- na.locf(df$gTrend, fromLast = TRUE)
+  df$devPrevMonth <- na.locf(df$devPrevMonth, fromLast = FALSE)
+  df$gTrend <- na.locf(df$gTrend, fromLast = FALSE)
   df$t <- row(df)
   
   
@@ -99,4 +100,3 @@ prep_ts_data <- function(date_range){
 }
 
 df <- prep_ts_data()
-
